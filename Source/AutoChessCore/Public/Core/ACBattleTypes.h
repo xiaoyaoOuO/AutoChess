@@ -19,7 +19,7 @@ enum class EACTeam : uint8
     Neutral UMETA(DisplayName = "中立")
 };
 
-/** 单位类别（对应设计文档「战斗单位分类」）。 */
+/** 单位类别 对应文档「战斗单位分类」。 */
 UENUM(BlueprintType)
 enum class EACUnitKind : uint8
 {
@@ -245,30 +245,7 @@ enum class EACActionIntent : uint8
 // 效果系统（M15）：触发器类型 / 触发策略 / 动作类型 / 条件类型
 // ---------------------------------------------------------------------------
 //
-// **阶段 3.2a 已整段删除**（原本是 `EACEffectTriggerType`(4) / `EACTriggerPolicy`(4) /
-// `EACActionType`(34) / `EACConditionType`(22) 四个枚举）。
-//
-// 删除依据（§3.1 表 + §7 阶段 3.2）：这四个枚举是自研效果系统的"指令集"，
-// 而系统本身（`Effects/ACEffectSystem.*`）、它的数据类型（`FACEffectBlock` / `FACEffectAction`
-// / `FACCondition`，原在 `Core/ACDataTypes.h`）与全部内容（`BuildEffectBlocks`）本阶段一起删除。
-// 全仓已无任何引用点（含 `ACAbilityExecutor` / `ACActionScheduler`：
-// 它们只引用了 `FACSkillDef` 与"状态标签"，前者属 3.2b、后者已改走 `ASC->GetTagCount`）。
-//
-// 替代映射见 §4.2：
-//   `TriggerType`      → `UGameplayAbility::AbilityTriggers` / GE 的 `Period` / 直接施加
-//   `TriggerPolicy`    → `StackLimitCount` + `bDenyOverflowApplication` / `CooldownGameplayEffectClass`
-//   `EACActionType`    → `UACGameplayEffectBase` 的 Modifier / `UGameplayEffectExecutionCalculation`
-//                        / `UACSummonEffectComponent` / `UACKillReviveEffectComponent`
-//   `EACConditionType` → `FGameplayTagQuery` + `UGameplayEffectCustomApplicationRequirement`
-//
-// 保留在本文件里的近邻：`EACStat` / `EACModOp`（属性口径）。`EACModScope` / `EACStackPolicy`
-// 已在阶段 4 删除，理由见本文件"作用域 / 堆叠策略"一节。
-//
-// **阶段 3.2b 复核**：技能执行线删除后（`FAbilityExecutor` / `FACSkillDef` 一并退场），
-// 上面四个枚举依旧没有任何引用点 —— 唯一引用过它们（连同 `FACSkillDef`）的文件已经不存在了。
-
-/** 六边形坐标：偏移坐标（even-r，偶数行右偏），Row 0 为敌方最上排。
- *  注：UHT 不支持 int16 暴露给蓝图，故用 int32；棋盘范围内数值不受影响。 */
+/** 六边形坐标：偏移坐标（even-r，偶数行右偏），Row 0 为敌方最上排。 */
 USTRUCT(BlueprintType)
 struct AUTOCHESSCORE_API FACHexCoord
 {

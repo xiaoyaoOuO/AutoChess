@@ -39,7 +39,6 @@ namespace BattleTags
     UE_DEFINE_GAMEPLAY_TAG(Hook_MentalBreak,       "Hook.Mental.Break");
     UE_DEFINE_GAMEPLAY_TAG(Hook_PreemptiveTrigger, "Hook.Timeline.Preemptive");
     UE_DEFINE_GAMEPLAY_TAG(Hook_PostEffectTrigger, "Hook.Timeline.PostEffect");
-    // 阶段 4：`Hook_TimelineModified` 已删除（无派发者，见头文件说明）。
     UE_DEFINE_GAMEPLAY_TAG(Hook_UnitMoved,         "Hook.Unit.Moved");
     UE_DEFINE_GAMEPLAY_TAG(Hook_TargetChanged,     "Hook.Target.Changed");
 
@@ -78,7 +77,6 @@ namespace BattleTags
     UE_DEFINE_GAMEPLAY_TAG(Damage_Type_Technical,  "Damage.Type.Technical");
     UE_DEFINE_GAMEPLAY_TAG(Damage_Type_True,       "Damage.Type.True");
     UE_DEFINE_GAMEPLAY_TAG(Damage_Type_Mental,     "Damage.Type.Mental");
-
-    // 阶段 4：抢攻判据（被 `UACGE_Equip_Gold_FlowBlade_Preemptive` 授予，见头文件说明）。
+    
     UE_DEFINE_GAMEPLAY_TAG(Effect_Trigger_Preemptive, "Effect.Trigger.Preemptive");
 }

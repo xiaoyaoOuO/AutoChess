@@ -640,7 +640,7 @@ UBattleWorld* UBattleWorld::FindFromActor(const AActor* Actor)
     }
 
     // ① 快路径：单位 Actor 的 Outer 直接是 UBattleWorld。
-    //    当前装配下**不成立**（SpawnActor 把 Outer 设成 ULevel），保留它是因为零开销、
+    //    当前装配下不成立（SpawnActor 把 Outer 设成 ULevel），保留它是因为零开销、
     //    且将来若有人显式指定 Outer 就自动生效。
     if (UBattleWorld* const OuterWorld = Cast<UBattleWorld>(Actor->GetOuter()))
     {
@@ -1380,7 +1380,7 @@ void UBattleWorld::RemoveUnitFromRegistry(FUnitId UnitId)
 
 void UBattleWorld::ResolveDeaths()
 {
-    // 1) 到期的召唤物（阶段 0.5：判定改按绝对时间，负值 = 永不过期）。
+    // 1) 到期的召唤物（负值 = 永不过期）。
     {
         const float NowSeconds = FACBattleTime::Now(*this);
         for (const TObjectPtr<AACBattleUnitBase>& Unit : Units)

@@ -91,7 +91,7 @@ private:
     TArray<FShieldInstance> Instances;
     uint64 NextInstanceId = 1;
 
-    /** `Shield` 属性的宿主（阶段 2）。单位 Actor 的默认子对象，生命周期覆盖本容器。 */
+    /** `Shield` 属性的宿主。单位 Actor 的默认子对象，生命周期覆盖本容器。 */
     UACBattleAttributeSet* AttributeSet = nullptr;
 
     /** 只有单位 Actor 能注入属性集（`Initialize` 是私有的）。 */

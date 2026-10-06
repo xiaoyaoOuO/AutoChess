@@ -14,7 +14,6 @@
 #include "Battle/ACBattleBoardActor.h"
 #include "Battle/ACAbilitySetComponent.h"
 #include "Battle/Components/ACUnitGridComponent.h"
-#include "Battle/Components/ACUnitPresentationComponent.h"
 #include "Battle/ACBattleTime.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
@@ -346,7 +345,6 @@ void AACRunPlayerController::BattleDumpUnits()
         const FVector WorldLocation = Board != nullptr ? Board->CellToWorld(Cell) : FVector::ZeroVector;
 
         const UACUnitGridComponent* const Grid = Unit.GetGridComponent();
-        const UACUnitPresentationComponent* const Presentation = Unit.GetPresentationComponent();
         const UACAbilitySetComponent* const SetComponent = Unit.GetAbilitySetComponent();
         UAbilitySystemComponent* const ASC = Unit.GetAbilitySystemComponent();
 
@@ -370,7 +368,7 @@ void AACRunPlayerController::BattleDumpUnits()
                     "(set=%s extras=%d) ASC=%s dead=%s pendingDeath=%s"),
                Grid != nullptr ? TEXT("yes") : TEXT("NO"),
                Grid != nullptr && Grid->GetBoardActor() != nullptr ? TEXT("bound") : TEXT("none"),
-               Presentation != nullptr ? TEXT("yes") : TEXT("NO"),
+               TEXT(" "),
                SetComponent != nullptr ? TEXT("yes") : TEXT("NO"),
                SetComponent != nullptr && SetComponent->AbilitySet != nullptr ? TEXT("yes") : TEXT("none"),
                SetComponent != nullptr ? SetComponent->ExtraAbilities.Num() : 0,

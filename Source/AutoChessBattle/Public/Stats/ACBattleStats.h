@@ -1,7 +1,3 @@
-// 阶段 2 改造（GAS 重构实施方案 §3.2 / §4.3 / §7 阶段 2）：属性计算从"自研管线"搬到 GAS 属性集。
-//
-// 阶段 1 之前：本文件是 `M07 属性与修饰器` 的**唯一计算入口**（`FBattleStatSheet` 持有
-//   Base 数组 + Current 数组 + 修饰器数组 + 转换规则 + 脏标记，`FBattleStatPipeline` 负责重算）。
 // 阶段 2 之后：**属性的唯一权威是 `UACBattleAttributeSet`**（`AACBattleUnitBase::GetStat` 直接读它）。
 //   本文件只剩两件事：
 //     ① `FBattleStatSheet`：`FACStatBlock` 的落地形态（**只有 Base 数组**），
@@ -9,12 +5,6 @@
 //        "召唤继承快照"（`SnapshotValues`）的数据源；
 //     ② `FACStatConversionRule`：王恩 / 蕾拉 / 科雷 / 那摩的攻速特例（本阶段**保留结构**，
 //        但改由调用方在 `InitializeFromStatBlock` **之前**作用于 `FACStatBlock`，见 `ApplyToBlock`）。
-//
-// **已删除**（阶段 2，§3.2）：`Current` 数组、`Modifiers` 数组、`Version`、`bDirty`，
-// 以及 `FBattleStatPipeline` 的 `Recompute` / `AddModifier` / `RemoveBySource` / `RemoveExpired` /
-// `ClearBattleTemp` / `GetStat` / `GetVersion` / `ApplyConversionRules`。
-// 这些能力全部由 GAS 承担：修饰器 → `FGameplayModifierInfo` + 聚合器（C8：不写 MMC），
-// 到期 → GE 时长，重算 → 聚合器自动（§4.3 映射表）。
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,16 +14,6 @@ class UACBattleAttributeSet;
 
 /**
  * 攻速特例（王恩 / 蕾拉 / 科雷 / 那摩），数据驱动。
- *
- * 阶段 2 的取舍（实施方案 §4.3 末行给了"GE Modifier 或 MMC"两条路，本阶段走第三条）：
- *   **保留结构，改为作用于 `FACStatBlock`（初始化前）**，理由是
- *     ① 本阶段的目标是"把读权威搬到属性集"而**不改数值**；在属性集初始化**之前**改输入块，
- *        属性集与 `FBattleStatSheet` 看到的是同一份已转换的值，数值等价性最容易证明；
- *     ② C8 禁止为属性修饰写 `UGameplayModMagnitudeCalculation`。转换规则严格说不是"修饰器"，
- *        但把它做成 MMC 就会在阶段 2 引入一条只有它用的新机制，收益为负；
- *     ③ 现阶段**没有任何调用方往规则数组 / 输入块里填过规则**（全仓无写入点），
- *        因此这是一段"保留接口、行为为空操作"的代码，不承担数值风险。
- *   阶段 3/4 若真要用它，再按 §4.3 裁决走 GE Modifier / MMC，本结构会被替换。
  */
 struct AUTOCHESSBATTLE_API FACStatConversionRule
 {

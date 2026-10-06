@@ -124,8 +124,6 @@ void UACBattleAttributeSet::SetAttributeDataValue(UAttributeSet* Set, const FGam
 
 FGameplayAttribute UACBattleAttributeSet::GetAttributeForStat(EACStat Stat)
 {
-    // 显式 switch，不用数组/循环猜：密钥 `EACStat`、值 `FGameplayAttribute`。
-    // 代价是多写十几行，收益是"`EACStat` 增删项时编译器直接报未处理枚举"（阶段 2 之后会真发生）。
     switch (Stat)
     {
     case EACStat::MaxHP:            return GetMaxHealthAttribute();
@@ -148,7 +146,7 @@ FGameplayAttribute UACBattleAttributeSet::GetAttributeForStat(EACStat Stat)
     case EACStat::Range:            return GetRangeAttribute();
     case EACStat::Count:
     default:
-        // 越界 / 哨兵：返回无效属性而不是断言崩溃。调用方（InitializeFromStatBlock）会跳过它。
+        // 越界 / 哨兵：返回无效属性。调用方（InitializeFromStatBlock）会跳过它。
         return FGameplayAttribute();
     }
 }

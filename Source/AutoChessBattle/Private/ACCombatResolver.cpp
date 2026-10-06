@@ -12,9 +12,6 @@
 // ---------------------------------------------------------------------------
 // 结构化日志埋点（阶段 0.1b）
 //
-// 为什么埋在这里：FCombatResolver 的伤害 / 治疗 / 护盾"三件事的**唯一事实源**（M08 的契约）。
-// 阶段 3 把效果块换成 GE 之后，改值仍要回到这个类里，埋点会跟着自然迁移，不会随效果系统重写而丢失。
-//
 // 为什么都在函数*返回前*埋：这三条路径中途都会派发钩子（Hook.BeforeDealDamage 等）。
 // 而钩子可以取消结算或改值。写在返回前，记下的才是"最终生效"，不是会被推翻的中间值。
 //
@@ -346,7 +343,7 @@ FDamageResult FCombatResolver::ApplyDamage(const FDamageRequest& Request)
     // `PreAttributeChange` —— 夹取由 `SetHealthFromResolver` 自己做（口径与那边逐字一致）。
     Result.AppliedHpLoss = FMath::Max(0.f, Result.AfterIncreaseReduction - Result.ShieldAbsorbed);
     const float HpBefore = Target->GetCurrentHP();
-    Target->SetHealthFromResolver(HpBefore - Result.AppliedHpLoss);
+    Target->SetHealth(HpBefore - Result.AppliedHpLoss);
     Result.Overkill = FMath::Max(0.f, Result.AppliedHpLoss - HpBefore);
 
     if (Target->GetCurrentHP() <= 0.f)
@@ -354,7 +351,7 @@ FDamageResult FCombatResolver::ApplyDamage(const FDamageRequest& Request)
         // 兜底归零：`SetHealthFromResolver` 已经夹到 [0, MaxHealth]，
         // 因此这里只在"MaxHealth 本身为 0 且血量算出为负"的退化场景才真正改写值。
         // 保留这一行是为了让"血量到 0 就再显式写一次 0"这个不变量留在管线上，不要删。
-        Target->SetHealthFromResolver(0.f);
+        Target->SetHealth(0.f);
         Target->MarkPendingDeath(Request.Source);
     }
 

@@ -384,13 +384,16 @@ private:
     TArray<FPendingTimelineFire> PendingTimelineFires;
 
     /** Actor 化（阶段 0a）：单位是真的 AActor，UPROPERTY 保证由 GC 正确持有与销毁。 */
-    UPROPERTY() TArray<TObjectPtr<AACBattleUnitBase>> Units;
+    UPROPERTY()
+    TArray<TObjectPtr<AACBattleUnitBase>> Units;
     /** UnitId → 单位 Actor（取代原 UnitIndex 的下标表）：FindUnit 与反注册都走 O(1) 查表。
      *  键写成 int32 而不写 FUnitId：两者是同一个类型（Core/ACBattleTypes.h 的 using 别名），
      *  在 UPROPERTY 声明里与项目其余位置一样直接写底层类型，避免 UHT 解析别名。 */
-    UPROPERTY() TMap<int32, TObjectPtr<AACBattleUnitBase>> UnitLookup;
+    UPROPERTY()
+    TMap<int32, TObjectPtr<AACBattleUnitBase>> UnitLookup;
     /** 战场棋盘 Actor（坐标变换唯一出口，§2.1）。 */
-    UPROPERTY() TObjectPtr<AACBattleBoardActor> BoardActor = nullptr;
+    UPROPERTY()
+    TObjectPtr<AACBattleBoardActor> BoardActor = nullptr;
     TArray<FACBattleCommand> Commands;
     TArray<FBattleSubscriptionHandle> SystemSubscriptions;
 

@@ -167,6 +167,7 @@ private:
     // ---- 内部推进 ----
     void EnterPhase(EACRunPhase NextPhase);
     void Log(const FString& Message);
+    UFUNCTION()
     void OnBattleFinished(const FACBattleResult& Result);
     void EnterShopPhase(EACRunNodeType NodeType);
     void FinishEncounter(bool bVictory);

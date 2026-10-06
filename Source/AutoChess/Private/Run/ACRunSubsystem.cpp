@@ -82,7 +82,6 @@ void UACRunSubsystem::StartRun(int32 Seed)
 {
     // ---- 种子与派生随机流 ----
     // 三条流分开的用意：经济掷骰（招募/集市）、奖励掷骰（掉落）、地图生成互不干扰，
-    // 因此"改一处内容"不会让另一处的随机结果整体偏移（调试与批测时非常关键）。
     RunSeed = Seed != 0 ? Seed : static_cast<int32>(FDateTime::UtcNow().GetTicks() & 0x7FFFFFFF);
     EconomyStream.Initialize(static_cast<int32>(HashCombine(static_cast<uint32>(RunSeed), 0x1u)));
     RewardStream.Initialize(static_cast<int32>(HashCombine(static_cast<uint32>(RunSeed), 0x2u)));

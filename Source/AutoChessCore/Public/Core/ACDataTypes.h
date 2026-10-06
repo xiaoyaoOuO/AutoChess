@@ -147,6 +147,7 @@ struct AUTOCHESSCORE_API FACAttackSegment
     TArray<TSubclassOf<UGameplayEffect>> OnHitEffects;
 };
 
+//攻击类型的定义
 USTRUCT(BlueprintType)
 struct AUTOCHESSCORE_API FACAttackPatternDef
 {
@@ -206,12 +207,6 @@ public:
     /** 五档基础属性（D/C/B/A/S），每档长度 = ACStatCount。 */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Battle|Unit")
     TArray<FACStatBlock> StatsByLevel;
-
-    // 阶段 3.2b 删除的两个字段（技能执行线收口）：
-    //   `FACSkillDef Skill`                   → 技能内容写在能力类上（见本文件"技能定义"一节）；
-    //   `TArray<FName> PassiveEffectBlockIds` → 被动内容的唯一入口是 `UACAbilitySet::GrantedAbilities`
-    //     （该字段自 3.2a 起就没有任何读取点：内核改走 `GrantedAbilities` + `GrantedEffects`）。
-    // 两者都不是"暂时保留"：留着它们会让"这个单位到底有哪些技能 / 被动"有两份互相矛盾的答案。
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Battle|Unit")
     FACAttackPatternDef AttackPattern;

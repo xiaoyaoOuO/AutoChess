@@ -14,19 +14,6 @@
 
 /**
  * 巨斧裂体（`SK_001`）：对**当前锁定的目标**造成 **200% 攻击力物理伤害**，清空全部专注。
- *
- * 逐项对照（`ACBattleContentDefinitions.cpp` 与旧块定义）：
- *   | 项            | 内容值                                     | 本类                                    |
- *   | ------------- | ------------------------------------------ | --------------------------------------- |
- *   | `SkillId`     | `SK_001`（:581）                            | `SkillId`                               |
- *   | `CastType`    | `Instant`（:583）                           | 继承基类（同步施放后结束）               |
- *   | `WindUpSeconds` | `0`（:584）                               | 不引入延迟任务                           |
- *   | `CostMode`    | `ClearAll`（:585）                          | `CostGameplayEffectClass = UACGE_Cost_ClearAll` |
- *   | 目标          | `PrimaryTarget` / 半径 1（:586-587）         | 基类默认值                               |
- *   | 射程          | `RangeOverride = -1` = 施法者射程（:588）    | 基类默认值                               |
- *   | 要求目标在射程内 | `true`（:589）                            | 基类默认值（`RequiresTargetInRange`）     |
- *   | 效果          | `ApplyDamage(200% ATK, Physical, 可暴击)`（:235） | `UACGE_InstantDamage` + `Data.Damage` |
- *   | `PresentationCueId` | `Cue_OP01_Skill`（:591）              | `PresentationCueId`（阶段 4 接）          |
  */
 UCLASS()
 class AUTOCHESSBATTLE_API UACSkill_Solivar_GreatAxe : public UACSkillAbilityBase
