@@ -49,7 +49,8 @@ public:
 private:
     void PublishResultIfReady();
 
-    UPROPERTY() TObjectPtr<UBattleSession> Session = nullptr;
+    UPROPERTY()
+    TObjectPtr<UBattleSession> Session = nullptr;
 
     FACBattleResult CachedResult;
     bool bResultReady = false;

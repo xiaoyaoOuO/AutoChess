@@ -8,21 +8,6 @@
 class UBattleWorld;
 class AACBattleUnitBase;
 
-// 阶段 0b（D8）：单位参数一律显式写成 Actor 类型；本头只把 `AACBattleUnitBase&` / `AACBattleUnitBase*`
-// 当函数参数用，前向声明足够，不需要完整类型。
-
-// 阶段 0.5（D2 / §5.2）：原来的 `FBattleClock`（整数 tick 时钟）与 `FSecondTickDispatcher`
-// （整秒派发器）已整体删除，时间一律走 `FACBattleTime`。"每秒"结算改成"每帧按 DeltaTime 结算"，
-// 见 `UBattleWorld::TickFrame`。这里刻意**不留兼容层**：让编译器把所有旧的 tick 调用点暴露出来。
-
-/**
- * 行动门控判定结果。
- *
- * 阶段 4：`Channeling` **已删除** —— 它唯一的产出点是
- * `Unit.GetActionState() == EACUnitActionState::Channeling`，而那个枚举项随引导线一起
- * 从 `EACUnitActionState` 删除（没有任何写入点），该分支恒为假。
- * `Stunned` 保留：它现在的判据是 ASC 上的 `State.Stun` 标签（`UACGE_State_Stun` 授予）。
- */
 enum class EACSchedulerGate : uint8
 {
     None,

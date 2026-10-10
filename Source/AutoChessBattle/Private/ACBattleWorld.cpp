@@ -4,81 +4,17 @@
 #include "Battle/ACAbilitySetComponent.h"
 #include "Core/ACBattleTags.h"
 #include "Engine/World.h"
-// 阶段 2：复活时清理单位身上有持续时间的 GE（见本文件 `RemoveDurationGameplayEffects`）。
-// `AbilitySystemComponent.h` 与 `GameplayEffect.h` 走显式包含：本文件需要
-// `UAbilitySystemComponent::GetActiveEffects` / `GetActiveGameplayEffect` /
-// `TickComponent`（阶段 3.2a：每帧驱动 ASC）与 `UGameplayEffect::DurationPolicy`，
-// 它们虽然被 `ACBattleUnitBase.h` 间接带进来，但依赖写显式，将来头文件瘦身时不会突然编译不过。
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
-// 阶段 3.2a：能力 / 常驻 GE 的清单与"效果块 Id → GE 类"过渡表都住在数据上下文里，
-// 而 `UACAbilitySet` 的完整类型是 `GiveTo` 所必需的（`TSubclassOf<UGameplayAbility>` 的数组操作）。
 #include "GAS/ACAbilitySet.h"
-// 阶段 3.2b（行动执行改"能力驱动"）：
-//   `GAS/ACBattleAbility.h`    —— `MoveOneStepTowards`（超距时走一格）、`GrantFocusToUnit`（坦克受击回专注）、
-//                                `MakeEventPayload`（广播钩子 GameplayEvent 时的载荷映射）；
-//   `ACSkillAbilityBase.h` / `ACBasicAttackAbility.h` —— 内核要**按基类分类**能力句柄
-//                                （技能 vs 普攻），因此需要这两个类的完整定义。
 #include "GAS/ACBattleAbility.h"
 #include "GAS/Abilities/ACBasicAttackAbility.h"
 #include "GAS/Abilities/ACSkillAbilityBase.h"
-// `UBattleWorld::FindFromActor` 的路径：Actor → UWorld → UGameInstance → UBattleSubsystem → UBattleSession。
-// 为什么不能走 `Cast<UBattleWorld>(Actor->GetOuter())`：`UWorld::SpawnActor` 内部是
-// `NewObject<AActor>(LevelToSpawnIn, ...)`，单位 Actor 的 Outer 是 `ULevel`，那个 Cast 恒为 nullptr，
-// 会让所有"从 GE/Execution 反查战斗世界"的调用静默失败（伤害不落地、召唤不生成，且无报错）。
 #include "Engine/GameInstance.h"
 #include "Flow/ACBattleSubsystem.h"
 #include "Flow/ACBattleSession.h"
 
-// ---------------------------------------------------------------------------
-// 阶段 0a（GAS 重构实施方案 §7 0a）：单位从 UObject 变成 Actor。
-// 本文件是**唯一**改逻辑的地方：
-//   - 生成路径 NewObject<AACBattleUnitBase>(this) → UWorld::SpawnActorDeferred（延迟构造）；
-//   - 注册表 TArray<TObjectPtr<AACBattleUnitBase>> + TMap<FUnitId,TObjectPtr<AACBattleUnitBase>> UnitLookup；
-//   - Shutdown 从"Reset 数组"改成真的 Destroy()，否则 Actor 会泄漏到关卡里。
-// 阶段 0b：单位类型别名已整体删除，全部写成显式 AACBattleUnitBase；
-// FindUnit(FUnitId) 的签名与语义保持不变（D8 只把它当内部查表入口），
-// 新增弱指针解引用统一入口 Resolve() / ResolveOrWarn()（D8，§5.1）。
-// ---------------------------------------------------------------------------
 
-
-// ---------------------------------------------------------------------------
-// 阶段 3.2a（GAS 重构实施方案 §7 阶段 3.2）：本文件是"删除旧系统"的主战场。
-// 被删掉的调用（原来都以 `EffectSystem.` 开头）与它们的替代：
-//   - `EffectSystem.Initialize(this, DataContext.EffectLibrary)`
-//       → 整个效果系统没了；常驻内容走 `UACAbilitySet` + 能力里的 GE 施加。
-//   - `TimelineSystem.OnTriggered` 里的 `ExecuteBlock(Entry.EffectBlockId)`
-//       → **阶段 3.2b 已收口**：抢攻改"开局施加一个带时长的 GE"、后发改内核待触发表
-//         （`PendingTimelineFires` / `TickPendingTimelineFires`），`FTimelineSystem` 已删除。
-//   - 三处 `GetStates().Initialize(...)` / `GetStates().Tick(...)`
-//       → 状态层数由 ASC 的标签计数承担（`AACBattleUnitBase::GetStateStacks`）。
-//   - `EffectSystem.RegisterBlock(...)`（定义被动 / 生成请求 / 强化 / 装备 / 词条 / 外部注入）
-//       → 全部收口到两条路：定义自带的走 `UACAbilitySetComponent::GrantToOwner()`；
-//         按局内进度追加的走 `ApplyGameplayEffectsToUnit`（**阶段 3.3 起直接收 GE 类**，
-//         3.2a 那张 `FACBattleDataContext::EffectBlockGEs` 过渡映射表已随字段类型改造删除）。
-//   - `EffectSystem.ExecuteBlock(Command.CardId)`（秘术卡）
-//       → 同上，改走 `ApplyGameplayEffectsToUnit`。
-//   - `EffectSystem.TickPeriodic(Now)` / `EffectSystem.UnregisterAllByOwner` / `MixStateInto`
-//       → 周期结算改由 GE 的 `Period` + `UACPeriodicDamageExecution`（引擎侧定时器）；
-//         随单位销毁一起消失（GE 挂在 ASC 上，Actor 销毁即释放）；状态哈希的"效果实例"维度消失。
-//
-// 阶段 3.2b（§7 阶段 3.2 的技能执行线 + 时间轴线）本文件又删掉两条：
-//   - `AbilityExecutor.RequestAction / TickChannels / TickStep / OnTakeHit / Initialize`
-//       → `ExecuteActionForUnit`（技能 → 普攻 → 移动，含 fallback）+ `MaintainTarget`（索敌）
-//         + 每帧的专注回复；`Ability/ACAbilityExecutor.{h,cpp}` 已整体删除。
-//   - `TimelineSystem.Initialize / Update / OnTriggered / RegisterEntry`
-//       → 开局直接施加抢攻 GE + `PendingTimelineFires`；`FTimelineSystem` 已整体删除。
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-// 结构化日志埋点（阶段 0.1b）
-//
-// 为什么埋在 World 里：死亡 / 复活 / 胜负这三件事的**唯一决定点**都在这里
-// （ResolveDeaths 的 MarkDead、ReviveUnit、CheckOutcome），别处只是请求"标记待死"。
-// 阶段 0 的 Actor 化会把这三段搬运到 Actor 生命周期回调里，埋点跟着走，语义不变。
-//
-// 日志仍用整型 FUnitId：§5.1 已裁决日志与钩子上下文属"战斗内瞬时结构"，
-// 整数才能人工读、才能跨场对齐（弱指针打印出来是内存地址）。
-// ---------------------------------------------------------------------------
 namespace
 {
     /** 日志分类：单位的生（复活）与死。 */
@@ -403,8 +339,7 @@ void UBattleWorld::Step(float DeltaTime)
     // 1) 命令（秘术 / 放弃 / 内部请求）。
     ConsumeCommands();
 
-    // 2) 每帧结算（原"整秒派发"，见 TickFrame 的说明）。
-    //    时间基准换了，但**顺序一字未改**：先状态 -> 回复 -> 过期清理 -> 周期效果 -> 精神值 -> 延迟回复。
+    // 2) 每帧结算
     TickFrame(DeltaTime);
 
     // 3) 时间轴后发（抢攻已在 `Initialize` → `ApplyPreBattleConfiguration` 里施加完毕）。

@@ -63,11 +63,6 @@ struct AUTOCHESS_API FACRunBattleOutcome
     /** 本场战斗时长（战斗内相对时间，秒）。阶段 0.5：由 `int64 BattleTicks` 改成秒。 */
     UPROPERTY(BlueprintReadOnly, Category = "Run|Battle")
     float BattleSeconds = 0.f;
-
-    // 阶段 4（D3 / §5.3）：`int64 StateHash` 字段**已删除**。
-    // 它是"确定性复现"的产物（旧 `FACBattleResult::Log.FinalStateHash` 的转发），
-    // 随 `UBattleWorld::ComputeStateHash` 与 `FACBattleLogMeta` 的哈希字段一起退场。
-    // 本结构里其它字段（胜负 / 魂晶来源拆分 / 掉落 / 阵亡名单 / 时长）全部保留。
 };
 
 class AUTOCHESS_API FACRunPostBattle

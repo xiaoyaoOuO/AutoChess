@@ -101,45 +101,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Run")
     bool SelectFirstAvailableNode();
 
-    /**
-     * 推进一步（自动演示与控制台 `AutoChess.Run.Step` 共用同一套内部逻辑）：
-     *   Idle/Settled → 开新局；Map → 选路；NodeResolving → 结算；Shop → 商店决策并离开。
-     * 返回 false 表示当前阶段无可推进项（例如战斗中需要等待真实时间）。
-     */
-    UFUNCTION(BlueprintCallable, Category = "Run")
-    bool AdvanceOneStep();
-
-    // ---- 商店操作（薄封装：转调 FACRunEconomy + FACRunSquad，便于蓝图/控制台调用）----
-    UFUNCTION(BlueprintCallable, Category = "Run|Shop")
-    bool BuyRecruitSlot(int32 SlotIndex);
-
-    UFUNCTION(BlueprintCallable, Category = "Run|Shop")
-    bool BuyMarketSlot(int32 SlotIndex);
-
     UFUNCTION(BlueprintCallable, Category = "Run|Shop")
     bool RefreshRecruit();
 
     UFUNCTION(BlueprintCallable, Category = "Run|Shop")
     bool RefreshMarket();
 
-    /** 锻体：购买并选第 OptionIndex 个碎片，施加给 SquadIndex 号上场干员。 */
-    UFUNCTION(BlueprintCallable, Category = "Run|Shop")
-    bool BuyFragmentAndApply(int32 OptionIndex, int32 SquadIndex);
-
     /** 复活一名阵亡干员（扣魂晶 + 永久属性惩罚）。 */
     UFUNCTION(BlueprintCallable, Category = "Run|Shop")
     bool ReviveOperator(FName OperatorId);
-
-    /** 批量复活所有阵亡干员（自动演示用；正式版本应逐个让玩家决定）。 */
-    UFUNCTION(BlueprintCallable, Category = "Run|Shop")
-    int32 ReviveAllAffordable();
-
-    // ---- 自动演示（让工程"开箱即跑"：不需要任何 UI 输入也能看到完整循环）----
-    UFUNCTION(BlueprintCallable, Category = "Run|Demo")
-    void SetAutoDemo(bool bEnabled) { bAutoDemo = bEnabled; }
-
-    UFUNCTION(BlueprintPure, Category = "Run|Demo")
-    bool IsAutoDemo() const { return bAutoDemo; }
 
     /** 由 GameMode 每帧调用：驱动战斗 + 自动演示节拍。 */
     void Tick(float RealDeltaSeconds);
@@ -155,27 +125,15 @@ public:
     const FACRunSettlement& GetSettlement() const { return Settlement; }
     const TArray<FACRunEventLogEntry>& GetEventLog() const { return EventLog; }
 
-    /** 多行状态摘要（HUD 与控制台共用；不含任何逻辑）。 */
-    UFUNCTION(BlueprintCallable, Category = "Run")
-    FString BuildStatusText() const;
-
-    /** 最近若干条日志的单行摘要。 */
-    UFUNCTION(BlueprintCallable, Category = "Run")
-    FString BuildLogText(int32 MaxLines = 8) const;
-
 private:
     // ---- 内部推进 ----
     void EnterPhase(EACRunPhase NextPhase);
-    void Log(const FString& Message);
+    void OnPhaseChanged(EACRunPhase NewPhase);
     UFUNCTION()
     void OnBattleFinished(const FACBattleResult& Result);
     void EnterShopPhase(EACRunNodeType NodeType);
     void FinishEncounter(bool bVictory);
     void StartBattleForCurrentNode();
-
-    // ---- 自动演示的内部动作 ----
-    void TickAutoDemo(float RealDeltaSeconds);
-    void AutoDemoShopStep();
 
     /** 把当前节点标记为已结算。 */
     void MarkCurrentNodeResolved();
@@ -209,10 +167,6 @@ private:
     FRandomStream RewardStream;
 
     TArray<FACRunEventLogEntry> EventLog;
-    float ElapsedRunSeconds = 0.f;
-
-    bool bAutoDemo = false;
-    float AutoDemoTimer = 0.f;
 
     /** 已结算过的节点（防止"同一节点被结算两次"导致重复开战/重复发奖）。 */
     TArray<int32> ResolvedNodeIds;

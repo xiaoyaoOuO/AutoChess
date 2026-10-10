@@ -39,13 +39,14 @@ enum class EACRunPhase : uint8
 {
     Idle            UMETA(DisplayName = "未开局"),
     Map             UMETA(DisplayName = "地图选路"),
+    Deploy          UMETA(DisplayName = "部署干员"),
     NodeResolving   UMETA(DisplayName = "节点结算"),
     Shop            UMETA(DisplayName = "战后商店"),
     Battle          UMETA(DisplayName = "战斗中"),
     Settled         UMETA(DisplayName = "已结算")
 };
 
-/** 节点类型（对应《自走棋系统结构说明》§5.2 的 8 类事件）。 */
+/** 节点类型。 */
 UENUM(BlueprintType)
 enum class EACRunNodeType : uint8
 {
@@ -132,13 +133,6 @@ struct AUTOCHESS_API FACRunTimelineGrant
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Run|Equipment")
     float TriggerSeconds = 0.f;
-
-    // 阶段 3.3：`float DurationSeconds` **已删除**。
-    // 它从来没有被内核读过（`UBattleWorld::ApplyPreBattleConfiguration` 只读
-    // `Effect` / `bPreemptive` / `TriggerSeconds` / `TargetUnitIndex`），
-    // 而"持续几秒"写在 GE 类自己的 `DurationPolicy` 上（心流刃抢攻 GE = `HasDuration(4s)`，
-    // 与这里原来填的 4.f 逐值一致，C6/D10）。留一个"能配但不生效"的字段比删掉它危险得多。
-    // `FACStartingTimelineSpec::DurationSeconds` 同批删除（同一个理由）。
 };
 
 /** 持有中的装备。属性加成在 Run 层结算（改基础属性），战斗内效果走 GE / 被动能力。*/

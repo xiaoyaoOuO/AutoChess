@@ -40,32 +40,4 @@ void AACRunHUD::DrawHUD()
              MediumFont != nullptr ? MediumFont : SmallFont, 1.15f);
 
     float CursorY = PanelY + 28.f;
-
-    // ---- 状态 ----
-    TArray<FString> StatusLines;
-    Run->BuildStatusText().ParseIntoArrayLines(StatusLines, /*bCullEmpty=*/false);
-    for (const FString& Line : StatusLines)
-    {
-        DrawText(Line, FLinearColor::White, PanelX, CursorY, SmallFont, PanelScale);
-        CursorY += 14.f * PanelScale;
-    }
-
-    // ---- 最近日志 ----
-    CursorY += 10.f;
-    DrawText(TEXT("--- 最近事件 ---"), FLinearColor(0.9f, 0.85f, 0.4f), PanelX, CursorY, SmallFont, PanelScale);
-    CursorY += 16.f * PanelScale;
-
-    // 注意：BuildLogText(MaxLines) 返回的是**拼好的多行字符串**（不是把行写进 TArray），
-    // 因此先取字符串、再按行切分。局部变量名不能叫 LogLines —— 那是本类的成员（C4458 遮蔽告警）。
-    TArray<FString> LogTextLines;
-    Run->BuildLogText(LogLines).ParseIntoArrayLines(LogTextLines, /*bCullEmpty=*/false);
-    for (const FString& Line : LogTextLines)
-    {
-        DrawText(Line, FLinearColor(0.82f, 0.82f, 0.82f), PanelX, CursorY, SmallFont, PanelScale);
-        CursorY += 14.f * PanelScale;
-    }
-
-    // ---- 操作提示 ----
-    DrawText(TEXT("控制台：AutoChess.Run.Status / Step / Auto 1 / Battle / Start [Seed] / Abandon   |   F1 状态  F2 推进一步  F3 直接开战  F4 新开局"),
-             FLinearColor(0.65f, 0.65f, 0.65f), PanelX, Canvas->ClipY - 40.f, SmallFont, 0.85f);
 }

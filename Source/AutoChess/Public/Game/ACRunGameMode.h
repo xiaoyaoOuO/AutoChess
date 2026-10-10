@@ -1,14 +1,3 @@
-// Run 层的**驱动外壳**（薄驱动，不含任何规则）。
-//
-// 为什么需要它：M01 明确约定"战斗内核由调用方 Tick"，而调用方就是 Run 层；
-// Run 层自身又是 GameInstanceSubsystem（没有 Tick）。因此需要关卡里的一个 Actor
-// 把每帧时间喂进去——这就是本类的全部职责。
-//
-// 依赖方向（单向，不回头）：
-//   AACRunGameMode → UACRunSubsystem → UBattleSubsystem → UBattleSession → UBattleWorld
-//
-// 关卡与资产说明：本工程当前 Content 为空，因此本类**不引用任何地图/蓝图资产**，
-// 挂上 GameMode 即可运行（见 Config/DefaultEngine.ini 的 GameDefaultMap/GameMode 配置项）。
 #pragma once
 
 #include "CoreMinimal.h"
@@ -31,10 +20,6 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
-
-    /** 关掉自动演示（改由控制台/UI 驱动）。 */
-    UFUNCTION(BlueprintCallable, Category = "Run")
-    void SetAutoDemo(bool bEnabled);
 
     /** 开一局（Seed = 0 时随机）。 */
     UFUNCTION(BlueprintCallable, Category = "Run")

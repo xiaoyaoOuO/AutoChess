@@ -79,23 +79,15 @@ void UBattleSession::Tick(float RealDeltaSeconds)
     {
         return;
     }
-
-    // 阶段 0.5（D2 / §5.2）：直接按帧推进，没有累积器、没有追赶循环、没有"丢掉多余时间"的告警。
-    // 帧长本身就是时间步长（`Step` 内部对 DeltaTime <= 0 直接返回），
-    // 因此"卡帧时战斗变慢"这件事由引擎的 DeltaTime 语义统一承担，而不是内核自己补步。
-    //
-    // ---- D11 性能测量点 ②：战斗总帧时 ----
-    // 测点在 `Step` **外面**（§2.3 的行动执行流程一行未动）：三次只读的计数器更新，
-    // 不改变 `Step` 的行为，也不引入第二份时间源（这里量的是 CPU 耗时，不是游戏时间）。
+    
     const double StepStartSeconds = FPlatformTime::Seconds();
     World->Step(RealDeltaSeconds);
     const double StepSeconds = FPlatformTime::Seconds() - StepStartSeconds;
 
+    //记录战斗运行性能
     PerfStats.StepTotalSeconds += StepSeconds;
     PerfStats.StepMaxSeconds = FMath::Max(PerfStats.StepMaxSeconds, StepSeconds);
     ++PerfStats.StepCount;
-    // GC 峰值代理：每帧采样一次存活 UObject 数（`FUObjectArray::GetObjectArrayNum()` 是
-    // 一次数组长度读取，热路径无压力），记峰值。
     PerfStats.PeakObjectCount = FMath::Max(PerfStats.PeakObjectCount, GUObjectArray.GetObjectArrayNum());
 
     TickPhaseMachine();

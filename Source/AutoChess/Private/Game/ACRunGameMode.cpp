@@ -5,14 +5,8 @@
 
 AACRunGameMode::AACRunGameMode()
 {
-    // 全部指向 C++ 类，不引用任何蓝图资产（Content 为空也能跑）。
-    PlayerControllerClass = AACRunPlayerController::StaticClass();
-    HUDClass = AACRunHUD::StaticClass();
+    PrimaryActorTick.bCanEverTick = true;
 
-    // 本作没有可操控 Pawn（棋盘是逻辑驱动 + HUD 展示）：
-    // DefaultPawnClass = nullptr + bStartPlayersAsSpectators = true，
-    // 可以保证 PlayerController 仍被创建（控制台命令与 HUD 依赖它），同时不做 Pawn 生成/碰撞处理。
-    DefaultPawnClass = nullptr;
     bStartPlayersAsSpectators = true;
 }
 
@@ -41,14 +35,6 @@ UACRunSubsystem* AACRunGameMode::GetRunSubsystem() const
 {
     UGameInstance* GameInstance = GetGameInstance();
     return GameInstance != nullptr ? GameInstance->GetSubsystem<UACRunSubsystem>() : nullptr;
-}
-
-void AACRunGameMode::SetAutoDemo(bool bEnabled)
-{
-    if (UACRunSubsystem* Run = GetRunSubsystem())
-    {
-        Run->SetAutoDemo(bEnabled);
-    }
 }
 
 void AACRunGameMode::StartNewRun(int32 Seed)

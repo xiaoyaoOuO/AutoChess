@@ -132,9 +132,6 @@ void FActionScheduler::Advance(float DeltaTime)
             ReadyQueue.Add(Unit.GetUnitId());
         }
     });
-
-    // ForEachAlive 按注册表顺序（UnitId 升序）遍历，就绪队列已按 (本帧, UnitId) 升序。
-    // 无需再次排序；ReadyTime 记录用于日志/快照。
 }
 
 void FActionScheduler::Consume(FUnitId UnitId)

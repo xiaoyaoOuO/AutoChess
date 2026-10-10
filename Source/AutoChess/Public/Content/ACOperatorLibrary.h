@@ -80,9 +80,12 @@ public:
 private:
     UACBattleContentLibrary* GetContent() const;
 
-    UPROPERTY() TMap<FName, FACOperatorTemplate> OperatorTemplates;
-    UPROPERTY() TArray<FName> OperatorIds;
+    UPROPERTY()
+    TMap<FName, FACOperatorTemplate> OperatorTemplates;
+    UPROPERTY()
+    TArray<FName> OperatorIds;
 
     /** 无定义资产时的兜底属性（示例值：能打死人，也不至于秒杀）。 */
-    UPROPERTY() FACStatBlock DefaultStatBlock;
+    UPROPERTY()
+    FACStatBlock DefaultStatBlock;
 };

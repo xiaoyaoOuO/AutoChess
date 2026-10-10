@@ -1,12 +1,4 @@
-// 阶段 0a 新增（GAS 重构实施方案 §2.1）：
-// 战斗棋盘 Actor（唯一，由 UBattleWorld 持有）：承载"六边形格 ↔ 世界坐标"的变换参数。
-//
-// 口径约定（重要）：
-//   - 偏移坐标约定**不在本文件重新定义**，直接沿用 UACHexGridStatics 的 even-r（x = col - (row + (row&1))/2）。
-//   - 本 Actor 自身的 Transform 不参与换算：换算只依赖 GridOrigin / HexSize / GridYaw 三个显式参数，
-//     这样"无编辑器 / 纯数据驱动"的战斗也能拿到确定的坐标。
-//   - 单位侧不得自行换算，只允许调本 Actor 的 CellToWorld / WorldToCell（§2.1）。
-//
+
 // 本阶段只实现数学：不接网格状态（那是 FBattleGrid 的职责），也不挂调试绘制组件（阶段 0c）。
 #pragma once
 
