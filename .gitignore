@@ -80,3 +80,6 @@ DerivedDataCache/*
 # doc file
 *.md
 *.docx
+
+# ...but agent skills under .dsh/skills are executable configuration, not docs
+!.dsh/skills/**
